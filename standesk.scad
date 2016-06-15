@@ -9,57 +9,65 @@
  */
 
 
-// Shall the Desk be built up or be rendered flat as a panel?
-flat = false;
+// Shall the Desk be assenmbled or be rendered flat as a panel?
+flat = true;
+project = true;
+panel = true;
 
 
-// Base Measures (all values in mm)
-width = 1150;
-height = 1100;
-depth = 800;
+// Base Measures (all values in cm)
+width = 112;
+height = 110;
+depth = 80;
 
 // Minimum space between parts on panel
 partsSpace = 2;
 
 // Material Properties
-thickness = 13;
-panelX = 2500; // just for the reference panel
-panelY = 1250; // displayed in grey when flat=true
+thickness = 2.1;
+panelX = 250; // just for the reference panel
+panelY = 125; // displayed in grey when flat=true
 
 // Foot
-baseHeight = 200;
-standDepth = 198;
-standSpace = 200;
+baseHeight = 20;
+standDepth = 18;
+standSpace = 20;
 
 // Rest
-restDepth = 180;
-restLevel = 240;
+restDepth = 15;
+restLevel = 24;
 restAngle = 15; // degrees
 
 // Crosses
-crossCut = max(height/7, 170); // 1/7th of height if > 170mm
+crossCut = max(height/7, 14); // 1/7th of height if > 140mm
 crossSpace = 0;
 crossAngle = atan((height - crossCut) / width);
 crossWidth = sin(90 - crossAngle) * crossCut;
 
 // Joints
-jointWidth = 90;
-jointLength = 50;
-jointTolerance = 2;
+jointWidth = 9;
+jointLength = 5.5;
+jointTolerance = 0;
 jointHoleWidth = thickness + jointTolerance;
-jointHoleLength = thickness + 10;
-jointHoleTolerance = 1;
-jointBuffer = max(2.4*thickness, 6); // at least 6mm
+jointHoleLength = thickness * 1.2;
+jointHoleOffset = thickness * 0.8;
+jointHoleTolerance = 0.1;
+jointBuffer = max(2.4*thickness, 0.6); // at least 6mm
+
+// Keys
+keyLength = 5;
+keyThickness = thickness * 1.2;
 
 // Flat Offsets
 crossesFlatXOff = depth + jointLength/2 + partsSpace;
 crossesFlatYOff = depth + partsSpace;
 
+
 /*
 	Table Top
 */
 module top(flat = false) {
-	trans = flat ? [depth, jointLength, 0] : [0, 0, height];
+	trans = flat ? [depth, jointLength+1, 0] : [0, 0, height];
 	rot = flat ? [0, 0, 90] : [0, 0, 0];
 	translate(trans)
 	rotate(rot)
@@ -99,7 +107,7 @@ module feet(flat = false) {
 				rotate([0, -90, 0])
 				foot("left", flat = true);
 
-				translate([-height -jointBuffer -partsSpace -baseHeight, depth, 0])
+				translate([-height -jointBuffer -partsSpace -baseHeight, depth+2, 0])
 				rotate([0, -90, 180])
 				foot("right", flat = true);
 			}
@@ -282,13 +290,12 @@ module cross(flat = false) {
 	}
 }
 
-
 /*
 	The foot rest
 */
 module rest(flat = false) {
 	rot = flat ? [0, 0, 0] : [restAngle, 0, 0];
-	trans = flat ? [depth + jointLength + partsSpace, crossesFlatYOff + 2*(crossWidth + partsSpace), 0] : [0, standSpace + (standDepth - restDepth)/2, restLevel];
+	trans = flat ? [depth + jointLength + partsSpace + 1, crossesFlatYOff + 2*(crossWidth + partsSpace), 0] : [0, standSpace + (standDepth - restDepth)/2, restLevel];
 
 	translate(trans)
 	rotate(rot)
@@ -305,7 +312,6 @@ module rest(flat = false) {
 	}
 }
 
-
 /*
 	Joints
 */
@@ -318,7 +324,7 @@ module joint() {
 			0,
 			0
 		])
-		translate([0, -1, 0])
+		translate([0, -1, jointHoleOffset])
 		cube([jointHoleWidth, thickness + 2, jointHoleLength]);
 	}
 }
@@ -331,6 +337,32 @@ module jointHole() {
 	cube([jointWidth + jointHoleTolerance, thickness + jointHoleTolerance, jointLength + jointHoleTolerance]);
 }
 
+module keys() {
+    if (flat) {
+        translate([panelX - partsSpace - keyLength, partsSpace, 0])
+        for(n = [0 : 9]) {
+            translate([0, (keyThickness + partsSpace) * n, 0])
+            key();
+        }
+    }
+}
+
+module key() {
+    linear_extrude(height = thickness)
+    polygon([[0, 0], [keyLength, 0], [0, keyThickness]]);
+}
+
+
+/*
+    The entire desk
+*/
+module desk(flat) {
+    feet(flat = flat);
+    top(flat = flat);
+    crosses(flat = flat);
+    rest(flat = flat);
+    keys(flat = flat);
+}
 
 /*
 	The Panel as a reference
@@ -340,12 +372,15 @@ module panel(){
 }
 
 
-feet(flat = flat);
-top(flat = flat);
-crosses(flat = flat);
-rest(flat = flat);
+if (flat && project) {
+    projection(cut = false)
+    desk(flat = flat);
+}
+else {
+    desk(flat = flat);   
+}
 
-if (flat)
+if (flat && panel)
 {
 	%panel();
 }
