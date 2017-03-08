@@ -27,13 +27,14 @@ module roundConcave(r, h, fn = 40) {
 
 module dogboneCube(dimensions, radius, fn = 40) {
 	union() {
+		offset = sin(45)*radius;
 		cube(dimensions);
 		translate([0, 0, dimensions[2]/2]) {
 
-			cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
-			translate([dimensions[0], 0, 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
-			translate([dimensions[0], dimensions[1], 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
-			translate([0, dimensions[1], 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
+			translate([offset, offset, 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
+			translate([dimensions[0]-offset, offset, 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
+			translate([dimensions[0]-offset, dimensions[1]-offset, 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
+			translate([offset, dimensions[1]-offset, 0]) cylinder(r = radius, h = dimensions[2], center = true, $fn = fn);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /**
  * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Version: 0.1.1
+ * Version: 0.1.2
  * Author: Joseph Paul <mail@jsph.pl>
  * License: Public Domain
  */
@@ -16,11 +16,11 @@ DESK_WIDTH = 1120;                                                              
 DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
 CORNER_RADIUS = 1.0;                                                             // cm // Radius for rounding the outer corners
-FILLET_RADIUS = 0.20;                                                             // cm // Radius for dogbone fillets
+FILLET_RADIUS = 0.20;                                                            // cm // Radius for dogbone fillets
 
 MATERIAL_WIDTH = 1250;                                                          // mm // Width of one panel of the desired raw material
-MATERIAL_LENGTH = 1250;                                                         // mm // Length of one panel of the desired raw material
-MATERIAL_THICKNESS = 21;                                                        // mm // Thickness of the desired raw material
+MATERIAL_LENGTH = 2500;                                                         // mm // Length of one panel of the desired raw material
+MATERIAL_THICKNESS = 18;                                                        // mm // Thickness of the desired raw material
 
 DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
 PARTS_CLEARANCE = 10;                                                           // mm // Extra space between individual Parts on the panel
@@ -28,23 +28,26 @@ PARTS_CLEARANCE = 10;                                                           
 /****************
  * Output options
  ****************/
-flat = false;
+flat = true;
 project = false;
 panel = true;
 
 
+/*******************************
+ * Derived values - DO NOT EDIT
+ *******************************/
 // Base Measures (all values in cm)
-width = 112;
-height = 110;
-depth = 80;
+width = DESK_WIDTH/10;
+height = DESK_HEIGHT/10;
+depth = DESK_DEPTH/10;
 
 // Minimum space between parts on panel
 partsSpace = 2;
 
 // Material Properties
-thickness = 1.80;
-panelX = 250; // just for the reference panel
-panelY = 125; // displayed in grey when flat=true
+thickness = MATERIAL_THICKNESS/10;
+panelX = MATERIAL_LENGTH/10;
+panelY = MATERIAL_WIDTH/10;
 
 // Foot
 baseHeight = 20;
@@ -56,11 +59,18 @@ restDepth = 15;
 restLevel = 24;
 restAngle = 15; // degrees
 
+// Top Support (another strut right below
+// the table top as a support when using
+// thinner material, recommended < 15mm)
+topsupportEnabled = true;
+topsupportDepth = 13;
+
 // Crosses
 crossCut = max(height/7, 14); // 1/7th of height if > 140mm
 crossSpace = 0;
 crossAngle = atan((height - crossCut) / width);
 crossWidth = sin(90 - crossAngle) * crossCut;
+crossSingle = true;  // Use only one strut for the cross
 
 // Joints
 jointWidth = 9;
@@ -287,8 +297,11 @@ module crosses(flat = true) {
 		translate([crossesFlatXOff, crossesFlatYOff, 0])
 		{
 			cross(flat = true);
-			translate([0, crossWidth + partsSpace, 0])
-			cross(flat = true);
+
+			if (! crossSingle) {
+				translate([0, crossWidth + partsSpace, 0])
+				cross(flat = true);
+			}
 		}
 	}
 	else
@@ -299,10 +312,12 @@ module crosses(flat = true) {
 			translate([0, thickness + crossSpace, 0])
 			cross();
 
-			// cross 2
-			translate([width, -crossSpace, 0])
-			mirror([1, 0, 0])
-			cross();
+			if (! crossSingle) {
+				// cross 2
+				translate([width, -crossSpace, 0])
+				mirror([1, 0, 0])
+				cross();
+			}
 		}
 	}
 }
@@ -362,6 +377,30 @@ module rest(flat = false) {
 }
 
 /*
+	The top support strut
+*/
+module topsupport(flat = false) {
+	if (topsupportEnabled) {
+		rot = flat ? [0, 0, 0] : [90, 0, 0];
+		trans = flat ? [crossesFlatXOff + 2*partsSpace, crossesFlatYOff + crossWidth + partsSpace, 0] : [0, standSpace + (standDepth+thickness)/2, height-topsupportDepth];
+
+		translate(trans)
+		rotate(rot)
+		union() {
+			cube([width, topsupportDepth, thickness]);
+
+			// joints
+			translate([0, (topsupportDepth + jointWidth) / 2, 0])
+			rotate([90, 0, -90])
+			joint();
+			translate([width, (topsupportDepth - jointWidth) / 2, 0])
+			rotate([90, 0, 90])
+			joint();
+		}
+	}
+}
+
+/*
 	Joints
 */
 module joint() {
@@ -415,9 +454,10 @@ module key() {
 */
 module desk(flat) {
     feet(flat = flat);
-    top(flat = flat);
+	top(flat = flat);
     crosses(flat = flat);
     rest(flat = flat);
+    topsupport(flat = flat);
     keys(flat = flat);
 }
 
