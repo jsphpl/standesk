@@ -1,7 +1,7 @@
 /**
  * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Version: 0.0.2
+ * Version: 0.1.1
  * Author: Joseph Paul <mail@jsph.pl>
  * License: Public Domain
  */
@@ -94,10 +94,10 @@ module top(flat = false) {
 			cube(size = [width, depth, thickness]);
 
 			// Rounded corners
-			rounded(CORNER_RADIUS, thickness);
-			translate([width, 0, 0]) rotate([0, 0, 90]) rounded(CORNER_RADIUS, thickness);
-			translate([width, depth, 0]) rotate([0, 0, 180]) rounded(CORNER_RADIUS, thickness);
-			translate([0, depth, 0]) rotate([0, 0, 270]) rounded(CORNER_RADIUS, thickness);
+			roundConvex(CORNER_RADIUS, thickness);
+			translate([width, 0, 0]) rotate([0, 0, 90]) roundConvex(CORNER_RADIUS, thickness);
+			translate([width, depth, 0]) rotate([0, 0, 180]) roundConvex(CORNER_RADIUS, thickness);
+			translate([0, depth, 0]) rotate([0, 0, 270]) roundConvex(CORNER_RADIUS, thickness);
 		}
 
 		// joints
@@ -246,9 +246,9 @@ module baseFoot() {
 			cube(size = [thickness, depth, baseHeight]);
 
 			// Rounded corners
-			rotate([90, 0, 90]) rounded(CORNER_RADIUS, thickness);
-			translate([0, 0, baseHeight]) rotate([0, 90, 0]) rounded(CORNER_RADIUS, thickness);
-			translate([0, depth, 0]) rotate([180, -90, 0]) rounded(CORNER_RADIUS, thickness);
+			rotate([90, 0, 90]) roundConvex(CORNER_RADIUS, thickness);
+			translate([0, 0, baseHeight]) rotate([0, 90, 0]) roundConvex(CORNER_RADIUS, thickness);
+			translate([0, depth, 0]) rotate([180, -90, 0]) roundConvex(CORNER_RADIUS, thickness);
 		}
 
 		// 2 stands
@@ -258,6 +258,10 @@ module baseFoot() {
 		translate([0, standSpace, 0])
 		footStand();
 
+		// Rounded corners
+		translate([0, standSpace+ standDepth, baseHeight]) rotate([90, 0, 90]) roundConcave(CORNER_RADIUS, thickness);
+		translate([0, standSpace, baseHeight]) rotate([90, 270, 90]) roundConcave(CORNER_RADIUS, thickness);
+		translate([0, depth-standDepth, baseHeight]) rotate([90, 270, 90]) roundConcave(CORNER_RADIUS, thickness);
 	}
 }
 
@@ -268,8 +272,8 @@ module footStand() {
 		cube(size = [thickness, standDepth, totalHeight]);
 
 		// Rounded corners
-		translate([0, 0, totalHeight]) rotate([0, 90, 0]) rounded(CORNER_RADIUS, thickness);
-		translate([thickness, standDepth, totalHeight]) rotate([0, 90, 180]) rounded(CORNER_RADIUS, thickness);
+		translate([0, 0, totalHeight]) rotate([0, 90, 0]) roundConvex(CORNER_RADIUS, thickness);
+		translate([thickness, standDepth, totalHeight]) rotate([0, 90, 180]) roundConvex(CORNER_RADIUS, thickness);
 	}
 }
 
@@ -380,8 +384,8 @@ module jointF() {
 		cube([jointWidth, thickness, jointLength + 1]);
 
 		// Rounded corners
-		translate([0, thickness, jointLength + 1]) rotate([90, 90, 0]) rounded(CORNER_RADIUS, thickness);
-		translate([jointWidth, thickness, jointLength + 1]) rotate([90, 180, 0]) rounded(CORNER_RADIUS, thickness);
+		translate([0, thickness, jointLength + 1]) rotate([90, 90, 0]) roundConvex(CORNER_RADIUS, thickness);
+		translate([jointWidth, thickness, jointLength + 1]) rotate([90, 180, 0]) roundConvex(CORNER_RADIUS, thickness);
 	}
 
 }
@@ -424,7 +428,6 @@ module panel(){
 	cube([panelX, panelY, thickness]);
 }
 
-// joint([jointLength, jointWidth, thickness]);
 
 if (flat && project) {
     projection(cut = false)

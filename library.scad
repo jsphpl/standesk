@@ -1,8 +1,20 @@
 
 
-module rounded(r, h, fn = 40) {
+module roundConvex(r, h, fn = 40) {
     h=h+2;
     translate([r / 2, r / 2, h/2 - 1])
+
+        difference() {
+            cube([r + 0.01, r + 0.01, h], center = true);
+
+            translate([r/2, r/2, 0])
+                cylinder(r = r, h = h + 1, center = true, $fn = fn);
+
+        }
+}
+
+module roundConcave(r, h, fn = 40) {
+    translate([r / 2, r / 2, h/2])
 
         difference() {
             cube([r + 0.01, r + 0.01, h], center = true);
