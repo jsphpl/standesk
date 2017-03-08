@@ -1,173 +1,180 @@
 /**
  * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Version: 0.1.2
+ * Version: 0.1.3
  * Author: Joseph Paul <mail@jsph.pl>
  * License: Public Domain
  */
 
-use <library.scad>;
-
-/***********************************
- * Parameters that are user-settable
- ***********************************/
+/*
+|-------------------------------------------------------------------------------
+| Parameters (user-settable)
+|-------------------------------------------------------------------------------
+*/
 DESK_HEIGHT = 1100;                                                             // mm // Height of the desk surface above the floor
 DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
 DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
 CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
 FILLET_RADIUS = 2;                                                            	// mm // Radius for dogbone fillets
+DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
+CLEARANCE = 10;                                                           		// mm // Extra space between individual Parts on the panel
 
 STOCK_WIDTH = 1250;                                                          	// mm // Width of one panel of the desired raw material
 STOCK_LENGTH = 2500;                                                         	// mm // Length of one panel of the desired raw material
 STOCK_THICKNESS = 18;                                                        	// mm // Thickness of the desired raw material
 
-DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
-PARTS_CLEARANCE = 10;                                                           // mm // Extra space between individual Parts on the panel
 
-/****************
- * Output options
- ****************/
-flat = false;
-project = false;
-panel = true;
-
-
-/*******************************
- * Derived values - DO NOT EDIT
- *******************************/
-// Base Measures (all values in cm)
-width = DESK_WIDTH;
-height = DESK_HEIGHT;
-depth = DESK_DEPTH;
-
-// Minimum space between parts on panel
-partsSpace = 10;
-
-// Material Properties
-thickness = STOCK_THICKNESS;
-panelX = STOCK_LENGTH;
-panelY = STOCK_WIDTH;
-
-// Foot
-baseHeight = 200;
-standDepth = 180;
-standSpace = 200;
-
-// Rest
-restDepth = 150;
-restLevel = 240;
-restAngle = 15; // degrees
-
-// Top Support (another strut right below
-// the table top as a support when using
-// thinner material, recommended < 15mm)
-topsupportEnabled = true;
-topsupportDepth = 130;
-
-// Crosses
-crossCut = max(height/7, 140); // 1/7th of height if > 140mm
-crossSpace = 0;
-crossAngle = atan((height - crossCut) / width);
-crossWidth = sin(90 - crossAngle) * crossCut;
-crossSingle = true;  // Use only one strut for the cross
-
-// Joints
-jointWidth = 90;
-jointLength = 55;
-jointTolerance = 0;
-jointHoleWidth = thickness + jointTolerance;
-jointHoleLength = thickness * 1.2;
-jointHoleOffset = thickness * 0.8;
-jointHoleTolerance = 1;
-jointBuffer = max(2.4*thickness, 6); // at least 6mm
-
-// Keys
-keyLength = 50;
-keyThickness = thickness * 1.2;
-
-// Flat Offsets
-crossesFlatXOff = depth + jointLength/2 + partsSpace;
-crossesFlatYOff = depth + partsSpace;
+/*
+|-------------------------------------------------------------------------------
+| Output Options
+|-------------------------------------------------------------------------------
+*/
+FLAT = false;
+PROJECTION = true;
+SHOW_STOCK = true;
+$fn = 50;
 
 
 /*
-	Table Top
+|-------------------------------------------------------------------------------
+| Details
+|-------------------------------------------------------------------------------
 */
-module top(flat = false) {
-	trans = flat ? [depth, jointLength+1, 0] : [0, 0, height];
-	rot = flat ? [0, 0, 90] : [0, 0, 0];
+// Feet
+BASE_HEIGHT = 200;
+STAND_DEPTH = 180;
+STAND_SPACE = 200;
+
+// Foot rest
+REST_DEPTH = 150;
+REST_LEVEL = 240;
+REST_ANGLE = 15; // degrees
+
+// Top Support (another strut right below the table top as a
+// support when using thinner material, recommended < 15mm)
+TOPSUPPORT_ON = true;
+TOPSUPPORT_DEPTH = 130;
+
+// Crosses
+CROSS_CUT = max(DESK_HEIGHT/7, 140); 	// 1/7th of DESK_HEIGHT if > 140mm
+CROSS_CLEARANCE = 0;
+CROSS_ANGLE = atan((DESK_HEIGHT - CROSS_CUT) / DESK_WIDTH);
+CROSS_WIDTH = sin(90 - CROSS_ANGLE) * CROSS_CUT;
+CROSS_SINGLE = true;  					// Use only one strut for the cross
+
+// Joints
+JOINT_WIDTH = 90;
+JOINT_LENGTH = 55;
+JOINT_TOLERANCE = 0;
+JOINT_SLOT_WIDTH = STOCK_THICKNESS + JOINT_TOLERANCE;
+JOINT_SLOT_LENGTH = STOCK_THICKNESS * 1.2;
+JOINT_SLOT_OFFSET = STOCK_THICKNESS * 0.8;
+JOINT_SLOT_TOLERANCE = 1;
+JOINT_BUFFER = max(2.4*STOCK_THICKNESS, 6); // at least 6mm
+
+// Keys
+KEY_LENGTH = 50;
+KEY_THICKNESS = STOCK_THICKNESS * 1.2;
+
+// Flat Offsets
+CROSSES_FLAT_OFFSET_X = DESK_DEPTH + JOINT_LENGTH/2 + CLEARANCE;
+CROSSES_FLAT_OFFSET_Y = DESK_DEPTH + CLEARANCE;
+
+
+/*
+|-------------------------------------------------------------------------------
+| Includes
+|-------------------------------------------------------------------------------
+*/
+include <library.scad>;
+
+
+/*
+|-------------------------------------------------------------------------------
+| Model
+|-------------------------------------------------------------------------------
+|
+| The actual model
+|
+*/
+
+/**
+ * The table top surface.
+ */
+module top() {
+	trans = FLAT ? [DESK_DEPTH, JOINT_LENGTH+1, 0] : [0, 0, DESK_HEIGHT];
+	rot = FLAT ? [0, 0, 90] : [0, 0, 0];
 	translate(trans)
 	rotate(rot)
 	union() {
 		difference() {
-			cube(size = [width, depth, thickness]);
+			cube(size = [DESK_WIDTH, DESK_DEPTH, STOCK_THICKNESS]);
 
 			// Rounded corners
-			roundConvex(CORNER_RADIUS, thickness);
-			translate([width, 0, 0]) rotate([0, 0, 90]) roundConvex(CORNER_RADIUS, thickness);
-			translate([width, depth, 0]) rotate([0, 0, 180]) roundConvex(CORNER_RADIUS, thickness);
-			translate([0, depth, 0]) rotate([0, 0, 270]) roundConvex(CORNER_RADIUS, thickness);
+			roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+			translate([DESK_WIDTH, 0, 0]) rotate([0, 0, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+			translate([DESK_WIDTH, DESK_DEPTH, 0]) rotate([0, 0, 180]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+			translate([0, DESK_DEPTH, 0]) rotate([0, 0, 270]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
 		}
 
 		// joints
 		// left
-		translate([0, depth - (standDepth - jointWidth) / 2, 0])
+		translate([0, DESK_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
 		rotate([90, 0, -90])
 		joint();
-		translate([0, standSpace + standDepth - (standDepth - jointWidth) / 2, 0])
+		translate([0, STAND_SPACE + STAND_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
 		rotate([90, 0, -90])
 		joint();
 
 		// right
-		translate([width, depth - (standDepth + jointWidth) / 2, 0])
+		translate([DESK_WIDTH, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH) / 2, 0])
 		rotate([90, 0, 90])
 		joint();
-		translate([width, standSpace + (standDepth - jointWidth) / 2, 0])
+		translate([DESK_WIDTH, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
 		rotate([90, 0, 90])
 		joint();
 	}
 }
 
-/*
-	Both feet with holes cut out
-*/
-module feet(flat = false) {
-	if (flat)
+/**
+ * Both complete feet.
+ */
+module feet() {
+	if (FLAT)
 	{
-		translate([depth + partsSpace, -partsSpace, thickness])
+		translate([DESK_DEPTH + CLEARANCE, -CLEARANCE, STOCK_THICKNESS])
 		{
 			rotate([0, 180, 0])
 			{
-				translate([0, partsSpace, 0])
+				translate([0, CLEARANCE, 0])
 				rotate([0, -90, 0])
-				foot("left", flat = true);
+				foot("left");
 
-				translate([-height -jointBuffer -partsSpace -baseHeight, depth+partsSpace, 0])
+				translate([-DESK_HEIGHT -JOINT_BUFFER -CLEARANCE -BASE_HEIGHT, DESK_DEPTH+CLEARANCE, 0])
 				rotate([0, -90, 180])
-				foot("right", flat = true);
+				foot("right");
 			}
 		}
 	}
 	else
 	{
-		translate([-thickness, 0, 0])
+		translate([-STOCK_THICKNESS, 0, 0])
 		{
-			foot("left", flat = false);
+			foot("left");
 
-			translate([width + thickness, 0, 0])
-			foot("right", flat = false);
+			translate([DESK_WIDTH + STOCK_THICKNESS, 0, 0])
+			foot("right");
 		}
 	}
 }
 
-
-/*
-	A foot with holes cut out
-
-	@side ["left"|"right"]
-*/
-module foot(side, flat = false) {
+/**
+ * A complete foot (left or right) with holes cut out.
+ *
+ * @param  {String} side Which side foot (left|right)
+ */
+module foot(side) {
 
 	if (side == "left")
 	{
@@ -180,25 +187,25 @@ module foot(side, flat = false) {
 			union() {
 
 				// top
-				translate([0, standSpace + (standDepth - jointWidth)/2, height])
+				translate([0, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH)/2, DESK_HEIGHT])
 				rotate([90, 0, 90])
 				jointHole();
-				translate([0, depth - (standDepth + jointWidth)/2, height])
+				translate([0, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH)/2, DESK_HEIGHT])
 				rotate([90, 0, 90])
 				jointHole();
 
 				// cross
-				translate([0, depth + crossSpace - standDepth/2, (crossCut + jointWidth)/2])
+				translate([0, DESK_DEPTH + CROSS_CLEARANCE - STAND_DEPTH/2, (CROSS_CUT + JOINT_WIDTH)/2])
 				rotate([0, 90, 0])
 				jointHole();
-				translate([0, depth - standDepth/2 - (thickness + crossSpace), height - (crossCut - jointWidth)/2])
+				translate([0, DESK_DEPTH - STAND_DEPTH/2 - (STOCK_THICKNESS + CROSS_CLEARANCE), DESK_HEIGHT - (CROSS_CUT - JOINT_WIDTH)/2])
 				rotate([0, 90, 0])
 				jointHole();
 
 				// rest
-				translate([thickness, standSpace + (standDepth - restDepth)/2, restLevel])
-				rotate([restAngle, 0, 0])
-				translate([0, (restDepth + jointWidth) / 2, 0])
+				translate([STOCK_THICKNESS, STAND_SPACE + (STAND_DEPTH - REST_DEPTH)/2, REST_LEVEL])
+				rotate([REST_ANGLE, 0, 0])
+				translate([0, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
 				rotate([90, 0, -90])
 				jointHole();
 
@@ -217,25 +224,25 @@ module foot(side, flat = false) {
 			union() {
 
 				// top
-				translate([0, standSpace + (standDepth - jointWidth)/2, height])
+				translate([0, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH)/2, DESK_HEIGHT])
 				rotate([90, 0, 90])
 				jointHole();
-				translate([0, depth - (standDepth + jointWidth)/2, height])
+				translate([0, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH)/2, DESK_HEIGHT])
 				rotate([90, 0, 90])
 				jointHole();
 
 				// cross
-				translate([0, depth - standDepth/2 - (thickness + crossSpace), (crossCut + jointWidth)/2])
+				translate([0, DESK_DEPTH - STAND_DEPTH/2 - (STOCK_THICKNESS + CROSS_CLEARANCE), (CROSS_CUT + JOINT_WIDTH)/2])
 				rotate([0, 90, 0])
 				jointHole();
-				translate([0, depth - standDepth/2 + crossSpace, height - (crossCut - jointWidth)/2])
+				translate([0, DESK_DEPTH - STAND_DEPTH/2 + CROSS_CLEARANCE, DESK_HEIGHT - (CROSS_CUT - JOINT_WIDTH)/2])
 				rotate([0, 90, 0])
 				jointHole();
 
 				// rest
-				translate([thickness, standSpace + (standDepth - restDepth)/2, restLevel])
-				rotate([restAngle, 0, 0])
-				translate([thickness, (restDepth + jointWidth) / 2, 0])
+				translate([STOCK_THICKNESS, STAND_SPACE + (STAND_DEPTH - REST_DEPTH)/2, REST_LEVEL])
+				rotate([REST_ANGLE, 0, 0])
+				translate([STOCK_THICKNESS, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
 				rotate([90, 0, -90])
 				jointHole();
 
@@ -244,77 +251,78 @@ module foot(side, flat = false) {
 	}
 }
 
-
-/*
-	A Single Table Foot without holes
-*/
+/**
+ * A Single Table Foot without holes.
+ */
 module baseFoot() {
 	union() {
 
 		// base
 		difference() {
-			cube(size = [thickness, depth, baseHeight]);
+			cube(size = [STOCK_THICKNESS, DESK_DEPTH, BASE_HEIGHT]);
 
 			// Rounded corners
-			rotate([90, 0, 90]) roundConvex(CORNER_RADIUS, thickness);
-			translate([0, 0, baseHeight]) rotate([0, 90, 0]) roundConvex(CORNER_RADIUS, thickness);
-			translate([0, depth, 0]) rotate([180, -90, 0]) roundConvex(CORNER_RADIUS, thickness);
+			rotate([90, 0, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+			translate([0, 0, BASE_HEIGHT]) rotate([0, 90, 0]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+			translate([0, DESK_DEPTH, 0]) rotate([180, -90, 0]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
 		}
 
 		// 2 stands
-		translate([0, depth - standDepth, 0])
+		translate([0, DESK_DEPTH - STAND_DEPTH, 0])
 		footStand();
 
-		translate([0, standSpace, 0])
+		translate([0, STAND_SPACE, 0])
 		footStand();
 
 		// Rounded corners
-		translate([0, standSpace+ standDepth, baseHeight]) rotate([90, 0, 90]) roundConcave(CORNER_RADIUS, thickness);
-		translate([0, standSpace, baseHeight]) rotate([90, 270, 90]) roundConcave(CORNER_RADIUS, thickness);
-		translate([0, depth-standDepth, baseHeight]) rotate([90, 270, 90]) roundConcave(CORNER_RADIUS, thickness);
+		translate([0, STAND_SPACE+ STAND_DEPTH, BASE_HEIGHT]) rotate([90, 0, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([0, STAND_SPACE, BASE_HEIGHT]) rotate([90, 270, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([0, DESK_DEPTH-STAND_DEPTH, BASE_HEIGHT]) rotate([90, 270, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
 	}
 }
 
+/**
+ * One vertical strut with holes cut out. Needed twice per foot.
+ */
 module footStand() {
-	totalHeight = height + jointBuffer;
+	totalHeight = DESK_HEIGHT + JOINT_BUFFER;
 
 	difference() {
-		cube(size = [thickness, standDepth, totalHeight]);
+		cube(size = [STOCK_THICKNESS, STAND_DEPTH, totalHeight]);
 
 		// Rounded corners
-		translate([0, 0, totalHeight]) rotate([0, 90, 0]) roundConvex(CORNER_RADIUS, thickness);
-		translate([thickness, standDepth, totalHeight]) rotate([0, 90, 180]) roundConvex(CORNER_RADIUS, thickness);
+		translate([0, 0, totalHeight]) rotate([0, 90, 0]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([STOCK_THICKNESS, STAND_DEPTH, totalHeight]) rotate([0, 90, 180]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
 	}
 }
 
-
-/*
-	Both crosses
-*/
-module crosses(flat = true) {
-	if(flat)
+/**
+ * Both crosses.
+ */
+module crosses() {
+	if(FLAT)
 	{
-		translate([crossesFlatXOff, crossesFlatYOff, 0])
+		translate([CROSSES_FLAT_OFFSET_X, CROSSES_FLAT_OFFSET_Y, 0])
 		{
-			cross(flat = true);
+			cross();
 
-			if (! crossSingle) {
-				translate([0, crossWidth + partsSpace, 0])
-				cross(flat = true);
+			if (! CROSS_SINGLE) {
+				translate([0, CROSS_WIDTH + CLEARANCE, 0])
+				cross();
 			}
 		}
 	}
 	else
 	{
-		translate([0, depth - standDepth/2, 0])
+		translate([0, DESK_DEPTH - STAND_DEPTH/2, 0])
 		union() {
 			// cross 1
-			translate([0, thickness + crossSpace, 0])
+			translate([0, STOCK_THICKNESS + CROSS_CLEARANCE, 0])
 			cross();
 
-			if (! crossSingle) {
+			if (! CROSS_SINGLE) {
 				// cross 2
-				translate([width, -crossSpace, 0])
+				translate([DESK_WIDTH, -CROSS_CLEARANCE, 0])
 				mirror([1, 0, 0])
 				cross();
 			}
@@ -322,20 +330,23 @@ module crosses(flat = true) {
 	}
 }
 
-module cross(flat = false) {
-	rotX1 = flat ? 0 : 90;
-	rotX2 = flat ? -90 : 0;
-	rotZ = flat ? -crossAngle : 0;
+/**
+ * A single diagonal strut.
+ */
+module cross() {
+	rotX1 = FLAT ? 0 : 90;
+	rotX2 = FLAT ? -90 : 0;
+	rotZ = FLAT ? -CROSS_ANGLE : 0;
 	rotate([0, 0, rotZ])
 	union() {
 		rotate([rotX1, 0, 0])
-		linear_extrude(height = thickness)
+		linear_extrude(height = STOCK_THICKNESS)
 		polygon(
 			points = [
 				[0, 0],
-				[width, height - crossCut],
-				[width, height],
-				[0, crossCut]
+				[DESK_WIDTH, DESK_HEIGHT - CROSS_CUT],
+				[DESK_WIDTH, DESK_HEIGHT],
+				[0, CROSS_CUT]
 			],
 			paths = [
 				[0, 1, 2, 3]
@@ -344,140 +355,153 @@ module cross(flat = false) {
 
 		// joints
 		rotate([rotX2, 0, 0]) {
-			translate([0, -thickness, (crossCut - jointWidth)/2])
+			translate([0, -STOCK_THICKNESS, (CROSS_CUT - JOINT_WIDTH)/2])
 			rotate([0, -90, 0])
 			joint();
-			translate([width, -thickness, height- (crossCut - jointWidth)/2])
+			translate([DESK_WIDTH, -STOCK_THICKNESS, DESK_HEIGHT- (CROSS_CUT - JOINT_WIDTH)/2])
 			rotate([0, 90, 0])
 			joint();
 		}
 	}
 }
 
-/*
-	The foot rest
-*/
-module rest(flat = false) {
-	rot = flat ? [0, 0, 0] : [restAngle, 0, 0];
-	trans = flat ? [depth + jointLength + partsSpace + 1, crossesFlatYOff + 2*crossWidth +3*partsSpace, 0] : [0, standSpace + (standDepth - restDepth)/2, restLevel];
+/**
+ * The lower horizontal bar intened as a foot rest.
+ */
+module rest() {
+	rot = FLAT ? [0, 0, 0] : [REST_ANGLE, 0, 0];
+	trans = FLAT ? [DESK_DEPTH + JOINT_LENGTH + CLEARANCE + 1, CROSSES_FLAT_OFFSET_Y + 2*CROSS_WIDTH +3*CLEARANCE, 0] : [0, STAND_SPACE + (STAND_DEPTH - REST_DEPTH)/2, REST_LEVEL];
 
 	translate(trans)
 	rotate(rot)
 	union() {
-		cube([width, restDepth, thickness]);
+		cube([DESK_WIDTH, REST_DEPTH, STOCK_THICKNESS]);
 
 		// joints
-		translate([0, (restDepth + jointWidth) / 2, 0])
+		translate([0, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
 		rotate([90, 0, -90])
 		joint();
-		translate([width, (restDepth - jointWidth) / 2, 0])
+		translate([DESK_WIDTH, (REST_DEPTH - JOINT_WIDTH) / 2, 0])
 		rotate([90, 0, 90])
 		joint();
 	}
 }
 
-/*
-	The top support strut
-*/
-module topsupport(flat = false) {
-	if (topsupportEnabled) {
-		rot = flat ? [0, 0, 0] : [90, 0, 0];
-		trans = flat ? [crossesFlatXOff + 3*partsSpace, crossesFlatYOff + crossWidth + partsSpace, 0] : [0, standSpace + (standDepth+thickness)/2, height-topsupportDepth];
+/**
+ * The top support strut. Intended to reinforce the
+ * table top when using thin stock material.
+ */
+module topsupport() {
+	if (TOPSUPPORT_ON) {
+		rot = FLAT ? [0, 0, 0] : [90, 0, 0];
+		trans = FLAT ? [CROSSES_FLAT_OFFSET_X + 3*CLEARANCE, CROSSES_FLAT_OFFSET_Y + CROSS_WIDTH + CLEARANCE, 0] : [0, STAND_SPACE + (STAND_DEPTH+STOCK_THICKNESS)/2, DESK_HEIGHT-TOPSUPPORT_DEPTH];
 
 		translate(trans)
 		rotate(rot)
 		union() {
-			cube([width, topsupportDepth, thickness]);
+			cube([DESK_WIDTH, TOPSUPPORT_DEPTH, STOCK_THICKNESS]);
 
 			// joints
-			translate([0, (topsupportDepth + jointWidth) / 2, 0])
+			translate([0, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2, 0])
 			rotate([90, 0, -90])
 			joint();
-			translate([width, (topsupportDepth - jointWidth) / 2, 0])
+			translate([DESK_WIDTH, (TOPSUPPORT_DEPTH - JOINT_WIDTH) / 2, 0])
 			rotate([90, 0, 90])
 			joint();
 		}
 	}
 }
 
-/*
-	Joints
-*/
+/**
+ * The male part of a joint, with a hole for the key.
+ */
 module joint() {
 	translate([0, 0, -0.5])
 	difference() {
-		jointF();
+		cube([JOINT_WIDTH, STOCK_THICKNESS, JOINT_LENGTH + 1]);
+
+		// Rounded corners
+		translate([0, STOCK_THICKNESS, JOINT_LENGTH + 1]) rotate([90, 90, 0]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([JOINT_WIDTH, STOCK_THICKNESS, JOINT_LENGTH + 1]) rotate([90, 180, 0]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+
 		translate([
-			(jointWidth - jointHoleWidth) / 2,
+			(JOINT_WIDTH - JOINT_SLOT_WIDTH) / 2,
 			0,
 			0
 		])
-		translate([0, thickness+1, jointHoleOffset])
+		translate([0, STOCK_THICKNESS+1, JOINT_SLOT_OFFSET])
 		rotate([90, 0, 0])
-			dogboneCube([jointHoleWidth, jointHoleLength, thickness + 2], FILLET_RADIUS);
+			dogboneCube([JOINT_SLOT_WIDTH, JOINT_SLOT_LENGTH, STOCK_THICKNESS + 2], FILLET_RADIUS);
 	}
 }
 
-module jointF() {
-	difference() {
-		cube([jointWidth, thickness, jointLength + 1]);
-
-		// Rounded corners
-		translate([0, thickness, jointLength + 1]) rotate([90, 90, 0]) roundConvex(CORNER_RADIUS, thickness);
-		translate([jointWidth, thickness, jointLength + 1]) rotate([90, 180, 0]) roundConvex(CORNER_RADIUS, thickness);
-	}
-
-}
+/**
+ * The female part of a joint. This one is positive
+ * and intended to be subtractad from other objects.
+ */
 module jointHole() {
-	translate([-jointHoleTolerance/2, -jointHoleTolerance/2, -jointHoleTolerance/2])
-	dogboneCube([jointWidth + jointHoleTolerance, thickness + jointHoleTolerance, thickness + jointHoleTolerance], FILLET_RADIUS);
+	translate([-JOINT_SLOT_TOLERANCE/2, -JOINT_SLOT_TOLERANCE/2, -JOINT_SLOT_TOLERANCE/2])
+	dogboneCube([JOINT_WIDTH + JOINT_SLOT_TOLERANCE, STOCK_THICKNESS + JOINT_SLOT_TOLERANCE, STOCK_THICKNESS + JOINT_SLOT_TOLERANCE], FILLET_RADIUS);
 }
 
+/**
+ * All keys next to each other.
+ */
 module keys() {
-    if (flat) {
-        translate([panelX - partsSpace - keyLength, partsSpace, 0])
-        for(n = [0 : 9]) {
-            translate([0, (keyThickness + partsSpace) * n, 0])
-            key();
-        }
-    }
+	if (FLAT) {
+		translate([STOCK_LENGTH - CLEARANCE - KEY_LENGTH, CLEARANCE, 0])
+		for(n = [0 : 9]) {
+			translate([0, (KEY_THICKNESS + CLEARANCE) * n, 0])
+			key();
+		}
+	}
 }
 
+/**
+ * A single key.
+ */
 module key() {
-    linear_extrude(height = thickness)
-    polygon([[0, 0], [keyLength, 0], [0, keyThickness]]);
+	linear_extrude(height = STOCK_THICKNESS)
+	polygon([[0, 0], [KEY_LENGTH, 0], [0, KEY_THICKNESS]]);
+}
+
+
+/**
+ * The full desk.
+ */
+module desk() {
+	feet();
+	top();
+	crosses();
+	rest();
+	topsupport();
+	keys();
+}
+
+/**
+ * The stock panel as a reference.
+ */
+module stock(){
+	cube([STOCK_LENGTH, STOCK_WIDTH, STOCK_THICKNESS]);
 }
 
 
 /*
-    The entire desk
+|-------------------------------------------------------------------------------
+| Rendering logic
+|-------------------------------------------------------------------------------
 */
-module desk(flat) {
-    feet(flat = flat);
-	top(flat = flat);
-    crosses(flat = flat);
-    rest(flat = flat);
-    topsupport(flat = flat);
-    keys(flat = flat);
-}
 
-/*
-	The Panel as a reference
-*/
-module panel(){
-	cube([panelX, panelY, thickness]);
-}
-
-
-if (flat && project) {
-    projection(cut = false)
-    desk(flat = flat);
+if (FLAT && PROJECTION) {
+	projection(cut = true)
+	translate([0, 0, -STOCK_THICKNESS/2])
+	desk();
 }
 else {
-    desk(flat = flat);
+	desk();
 }
 
-if (flat && panel)
+if (FLAT && SHOW_STOCK)
 {
-	%panel();
+	%stock();
 }
