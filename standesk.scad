@@ -1,15 +1,31 @@
 /**
- * ----------------------------------------------------------------------------
- * "PASS-IT-ON LICENSE" <3
- * As long as you retain this notice, you can do whatever you want with this
- * stuff. If you think it's worth it, pass it on and do someone else a favour.
+ * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Contributors: <contact@josephpaul.de>
- * ----------------------------------------------------------------------------
+ * Version: 0.0.1
+ * Author: Joseph Paul <mail@jsph.pl>
+ * License: Public Domain
  */
 
 
-// Shall the Desk be assenmbled or be rendered flat as a panel?
+/***********************************
+ * Parameters that are user-settable
+ ***********************************/
+DESK_HEIGHT = 1100;                                                             // mm // Height of the desk surface above the floor
+DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
+DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
+
+CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
+
+MATERIAL_WIDTH = 1250;                                                          // mm // Width of one panel of the desired raw material
+MATERIAL_LENGTH = 1250;                                                         // mm // Length of one panel of the desired raw material
+MATERIAL_THICKNESS = 21;                                                        // mm // Thickness of the desired raw material
+
+DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
+PARTS_CLEARANCE = 10;                                                           // mm // Extra space between individual Parts on the panel
+
+/****************
+ * Output options
+ ****************/
 flat = true;
 project = true;
 panel = true;
@@ -377,7 +393,7 @@ if (flat && project) {
     desk(flat = flat);
 }
 else {
-    desk(flat = flat);   
+    desk(flat = flat);
 }
 
 if (flat && panel)
