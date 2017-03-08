@@ -15,12 +15,12 @@ DESK_HEIGHT = 1100;                                                             
 DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
 DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
-CORNER_RADIUS = 1.0;                                                             // cm // Radius for rounding the outer corners
-FILLET_RADIUS = 0.20;                                                            // cm // Radius for dogbone fillets
+CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
+FILLET_RADIUS = 2;                                                            	// mm // Radius for dogbone fillets
 
-MATERIAL_WIDTH = 1250;                                                          // mm // Width of one panel of the desired raw material
-MATERIAL_LENGTH = 2500;                                                         // mm // Length of one panel of the desired raw material
-MATERIAL_THICKNESS = 18;                                                        // mm // Thickness of the desired raw material
+STOCK_WIDTH = 1250;                                                          	// mm // Width of one panel of the desired raw material
+STOCK_LENGTH = 2500;                                                         	// mm // Length of one panel of the desired raw material
+STOCK_THICKNESS = 18;                                                        	// mm // Thickness of the desired raw material
 
 DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
 PARTS_CLEARANCE = 10;                                                           // mm // Extra space between individual Parts on the panel
@@ -28,7 +28,7 @@ PARTS_CLEARANCE = 10;                                                           
 /****************
  * Output options
  ****************/
-flat = true;
+flat = false;
 project = false;
 panel = true;
 
@@ -37,53 +37,53 @@ panel = true;
  * Derived values - DO NOT EDIT
  *******************************/
 // Base Measures (all values in cm)
-width = DESK_WIDTH/10;
-height = DESK_HEIGHT/10;
-depth = DESK_DEPTH/10;
+width = DESK_WIDTH;
+height = DESK_HEIGHT;
+depth = DESK_DEPTH;
 
 // Minimum space between parts on panel
-partsSpace = 2;
+partsSpace = 10;
 
 // Material Properties
-thickness = MATERIAL_THICKNESS/10;
-panelX = MATERIAL_LENGTH/10;
-panelY = MATERIAL_WIDTH/10;
+thickness = STOCK_THICKNESS;
+panelX = STOCK_LENGTH;
+panelY = STOCK_WIDTH;
 
 // Foot
-baseHeight = 20;
-standDepth = 18;
-standSpace = 20;
+baseHeight = 200;
+standDepth = 180;
+standSpace = 200;
 
 // Rest
-restDepth = 15;
-restLevel = 24;
+restDepth = 150;
+restLevel = 240;
 restAngle = 15; // degrees
 
 // Top Support (another strut right below
 // the table top as a support when using
 // thinner material, recommended < 15mm)
 topsupportEnabled = true;
-topsupportDepth = 13;
+topsupportDepth = 130;
 
 // Crosses
-crossCut = max(height/7, 14); // 1/7th of height if > 140mm
+crossCut = max(height/7, 140); // 1/7th of height if > 140mm
 crossSpace = 0;
 crossAngle = atan((height - crossCut) / width);
 crossWidth = sin(90 - crossAngle) * crossCut;
 crossSingle = true;  // Use only one strut for the cross
 
 // Joints
-jointWidth = 9;
-jointLength = 5.5;
+jointWidth = 90;
+jointLength = 55;
 jointTolerance = 0;
 jointHoleWidth = thickness + jointTolerance;
 jointHoleLength = thickness * 1.2;
 jointHoleOffset = thickness * 0.8;
-jointHoleTolerance = 0.1;
-jointBuffer = max(2.4*thickness, 0.6); // at least 6mm
+jointHoleTolerance = 1;
+jointBuffer = max(2.4*thickness, 6); // at least 6mm
 
 // Keys
-keyLength = 5;
+keyLength = 50;
 keyThickness = thickness * 1.2;
 
 // Flat Offsets
@@ -143,7 +143,7 @@ module feet(flat = false) {
 				rotate([0, -90, 0])
 				foot("left", flat = true);
 
-				translate([-height -jointBuffer -partsSpace -baseHeight, depth+2, 0])
+				translate([-height -jointBuffer -partsSpace -baseHeight, depth+partsSpace, 0])
 				rotate([0, -90, 180])
 				foot("right", flat = true);
 			}
@@ -359,7 +359,7 @@ module cross(flat = false) {
 */
 module rest(flat = false) {
 	rot = flat ? [0, 0, 0] : [restAngle, 0, 0];
-	trans = flat ? [depth + jointLength + partsSpace + 1, crossesFlatYOff + 2*(crossWidth + partsSpace), 0] : [0, standSpace + (standDepth - restDepth)/2, restLevel];
+	trans = flat ? [depth + jointLength + partsSpace + 1, crossesFlatYOff + 2*crossWidth +3*partsSpace, 0] : [0, standSpace + (standDepth - restDepth)/2, restLevel];
 
 	translate(trans)
 	rotate(rot)
@@ -382,7 +382,7 @@ module rest(flat = false) {
 module topsupport(flat = false) {
 	if (topsupportEnabled) {
 		rot = flat ? [0, 0, 0] : [90, 0, 0];
-		trans = flat ? [crossesFlatXOff + 2*partsSpace, crossesFlatYOff + crossWidth + partsSpace, 0] : [0, standSpace + (standDepth+thickness)/2, height-topsupportDepth];
+		trans = flat ? [crossesFlatXOff + 3*partsSpace, crossesFlatYOff + crossWidth + partsSpace, 0] : [0, standSpace + (standDepth+thickness)/2, height-topsupportDepth];
 
 		translate(trans)
 		rotate(rot)
