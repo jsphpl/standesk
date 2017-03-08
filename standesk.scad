@@ -1,11 +1,12 @@
 /**
  * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Version: 0.0.1
+ * Version: 0.0.2
  * Author: Joseph Paul <mail@jsph.pl>
  * License: Public Domain
  */
 
+use <library.scad>;
 
 /***********************************
  * Parameters that are user-settable
@@ -14,7 +15,8 @@ DESK_HEIGHT = 1100;                                                             
 DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
 DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
-CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
+CORNER_RADIUS = 1.0;                                                             // cm // Radius for rounding the outer corners
+FILLET_RADIUS = 0.20;                                                             // cm // Radius for dogbone fillets
 
 MATERIAL_WIDTH = 1250;                                                          // mm // Width of one panel of the desired raw material
 MATERIAL_LENGTH = 1250;                                                         // mm // Length of one panel of the desired raw material
@@ -26,8 +28,8 @@ PARTS_CLEARANCE = 10;                                                           
 /****************
  * Output options
  ****************/
-flat = true;
-project = true;
+flat = false;
+project = false;
 panel = true;
 
 
@@ -40,7 +42,7 @@ depth = 80;
 partsSpace = 2;
 
 // Material Properties
-thickness = 2.1;
+thickness = 1.80;
 panelX = 250; // just for the reference panel
 panelY = 125; // displayed in grey when flat=true
 
@@ -88,7 +90,15 @@ module top(flat = false) {
 	translate(trans)
 	rotate(rot)
 	union() {
-		cube(size = [width, depth, thickness]);
+		difference() {
+			cube(size = [width, depth, thickness]);
+
+			// Rounded corners
+			rounded(CORNER_RADIUS, thickness);
+			translate([width, 0, 0]) rotate([0, 0, 90]) rounded(CORNER_RADIUS, thickness);
+			translate([width, depth, 0]) rotate([0, 0, 180]) rounded(CORNER_RADIUS, thickness);
+			translate([0, depth, 0]) rotate([0, 0, 270]) rounded(CORNER_RADIUS, thickness);
+		}
 
 		// joints
 		// left
@@ -232,15 +242,34 @@ module baseFoot() {
 	union() {
 
 		// base
-		cube(size = [thickness, depth, baseHeight]);
+		difference() {
+			cube(size = [thickness, depth, baseHeight]);
+
+			// Rounded corners
+			rotate([90, 0, 90]) rounded(CORNER_RADIUS, thickness);
+			translate([0, 0, baseHeight]) rotate([0, 90, 0]) rounded(CORNER_RADIUS, thickness);
+			translate([0, depth, 0]) rotate([180, -90, 0]) rounded(CORNER_RADIUS, thickness);
+		}
 
 		// 2 stands
 		translate([0, depth - standDepth, 0])
-		cube(size = [thickness, standDepth, height + jointBuffer]);
+		footStand();
 
 		translate([0, standSpace, 0])
-		cube(size = [thickness, standDepth, height + jointBuffer]);
+		footStand();
 
+	}
+}
+
+module footStand() {
+	totalHeight = height + jointBuffer;
+
+	difference() {
+		cube(size = [thickness, standDepth, totalHeight]);
+
+		// Rounded corners
+		translate([0, 0, totalHeight]) rotate([0, 90, 0]) rounded(CORNER_RADIUS, thickness);
+		translate([thickness, standDepth, totalHeight]) rotate([0, 90, 180]) rounded(CORNER_RADIUS, thickness);
 	}
 }
 
@@ -340,17 +369,25 @@ module joint() {
 			0,
 			0
 		])
-		translate([0, -1, jointHoleOffset])
-		cube([jointHoleWidth, thickness + 2, jointHoleLength]);
+		translate([0, thickness+1, jointHoleOffset])
+		rotate([90, 0, 0])
+			dogboneCube([jointHoleWidth, jointHoleLength, thickness + 2], FILLET_RADIUS);
 	}
 }
 
 module jointF() {
-	cube([jointWidth, thickness, jointLength + 1]);
+	difference() {
+		cube([jointWidth, thickness, jointLength + 1]);
+
+		// Rounded corners
+		translate([0, thickness, jointLength + 1]) rotate([90, 90, 0]) rounded(CORNER_RADIUS, thickness);
+		translate([jointWidth, thickness, jointLength + 1]) rotate([90, 180, 0]) rounded(CORNER_RADIUS, thickness);
+	}
+
 }
 module jointHole() {
 	translate([-jointHoleTolerance/2, -jointHoleTolerance/2, -jointHoleTolerance/2])
-	cube([jointWidth + jointHoleTolerance, thickness + jointHoleTolerance, jointLength + jointHoleTolerance]);
+	dogboneCube([jointWidth + jointHoleTolerance, thickness + jointHoleTolerance, thickness + jointHoleTolerance], FILLET_RADIUS);
 }
 
 module keys() {
@@ -387,6 +424,7 @@ module panel(){
 	cube([panelX, panelY, thickness]);
 }
 
+// joint([jointLength, jointWidth, thickness]);
 
 if (flat && project) {
     projection(cut = false)
