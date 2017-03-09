@@ -25,14 +25,22 @@ module roundCorner(radius, height) {
  */
 module dogboneCube(dimensions, radius) {
 	union() {
-		offset = sin(45)*radius;
 		cube(dimensions);
-		translate([0, 0, dimensions[2]/2]) {
-
-			translate([offset, offset, 0]) cylinder(r = radius, h = dimensions[2], center = true);
-			translate([dimensions[0]-offset, offset, 0]) cylinder(r = radius, h = dimensions[2], center = true);
-			translate([dimensions[0]-offset, dimensions[1]-offset, 0]) cylinder(r = radius, h = dimensions[2], center = true);
-			translate([offset, dimensions[1]-offset, 0]) cylinder(r = radius, h = dimensions[2], center = true);
-		}
+		translate([0, 0, 0]) rotate([0, 0, 0])  fillet(radius, dimensions[2]);
+		translate([dimensions[0], 0, 0]) rotate([0, 0, 90])  fillet(radius, dimensions[2]);
+		translate([dimensions[0], dimensions[1], 0]) rotate([0, 0, 180])  fillet(radius, dimensions[2]);
+		translate([0, dimensions[1], 0]) rotate([0, 0, 270])  fillet(radius, dimensions[2]);
 	}
+}
+
+/**
+ * A single cylinder to be used as negative for subtracting fillets.
+ *
+ * @param  {Number} radius Radius of the fillet
+ * @param  {Number} height Stock thickness
+ */
+module fillet(radius, height) {
+	offset = sin(45)*radius;
+	translate([offset, offset, STOCK_THICKNESS/2])
+	cylinder(r = radius, h = height + 0.01, center = true);
 }

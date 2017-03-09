@@ -16,7 +16,7 @@ DESK_WIDTH = 1120;                                                              
 DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
 CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
-FILLET_RADIUS = 2;                                                            	// mm // Radius for dogbone fillets
+FILLET_RADIUS = 5;                                                            	// mm // Radius for dogbone fillets
 DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
 CLEARANCE = 10;                                                           		// mm // Extra space between individual Parts on the panel
 
@@ -30,10 +30,11 @@ STOCK_THICKNESS = 18;                                                        	//
 | Output Options
 |-------------------------------------------------------------------------------
 */
-FLAT = false;
-PROJECTION = true;
-SHOW_STOCK = true;
-$fn = 50;
+FLAT = true;
+PROJECTION = false;
+SHOW_STOCK = false;
+TEST_JOINT = false;
+$fn = 24;
 
 
 /*
@@ -107,33 +108,45 @@ module top() {
 	rot = FLAT ? [0, 0, 90] : [0, 0, 0];
 	translate(trans)
 	rotate(rot)
-	union() {
-		difference() {
+	difference() {
+		union() {
 			cube(size = [DESK_WIDTH, DESK_DEPTH, STOCK_THICKNESS]);
 
-			// Rounded corners
-			roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
-			translate([DESK_WIDTH, 0, 0]) rotate([0, 0, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
-			translate([DESK_WIDTH, DESK_DEPTH, 0]) rotate([0, 0, 180]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
-			translate([0, DESK_DEPTH, 0]) rotate([0, 0, 270]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+			// Joints
+			// left
+			translate([0, DESK_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
+			rotate([90, 0, -90])
+			joint();
+			translate([0, STAND_SPACE + STAND_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
+			rotate([90, 0, -90])
+			joint();
+
+			// right
+			translate([DESK_WIDTH, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH) / 2, 0])
+			rotate([90, 0, 90])
+			joint();
+			translate([DESK_WIDTH, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
+			rotate([90, 0, 90])
+			joint();
 		}
 
-		// joints
-		// left
-		translate([0, DESK_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
-		rotate([90, 0, -90])
-		joint();
-		translate([0, STAND_SPACE + STAND_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
-		rotate([90, 0, -90])
-		joint();
+		// Rounded corners
+		roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([DESK_WIDTH, 0, 0]) rotate([0, 0, 90]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([DESK_WIDTH, DESK_DEPTH, 0]) rotate([0, 0, 180]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
+		translate([0, DESK_DEPTH, 0]) rotate([0, 0, 270]) roundCorner(CORNER_RADIUS, STOCK_THICKNESS);
 
+		// Fillets
+		// left
+		translate([0, DESK_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0]) rotate([0, 0, 90]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([0, DESK_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2 - JOINT_WIDTH, 0]) rotate([0, 0, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([0, STAND_SPACE + STAND_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2, 0])  rotate([0, 0, 90]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([0, STAND_SPACE + STAND_DEPTH - (STAND_DEPTH - JOINT_WIDTH) / 2 - JOINT_WIDTH, 0])  rotate([0, 0, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
 		// right
-		translate([DESK_WIDTH, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH) / 2, 0])
-		rotate([90, 0, 90])
-		joint();
-		translate([DESK_WIDTH, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH) / 2, 0])
-		rotate([90, 0, 90])
-		joint();
+		translate([DESK_WIDTH, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH) / 2, 0]) rotate([0, 0, 270]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([DESK_WIDTH, DESK_DEPTH - (STAND_DEPTH + JOINT_WIDTH) / 2 + JOINT_WIDTH, 0]) rotate([0, 0, 0]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([DESK_WIDTH, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH) / 2, 0])  rotate([0, 0, 270]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([DESK_WIDTH, STAND_SPACE + (STAND_DEPTH - JOINT_WIDTH) / 2 + JOINT_WIDTH, 0])  rotate([0, 0, 0]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
 	}
 }
 
@@ -338,29 +351,40 @@ module cross() {
 	rotX2 = FLAT ? -90 : 0;
 	rotZ = FLAT ? -CROSS_ANGLE : 0;
 	rotate([0, 0, rotZ])
-	union() {
-		rotate([rotX1, 0, 0])
-		linear_extrude(height = STOCK_THICKNESS)
-		polygon(
-			points = [
-				[0, 0],
-				[DESK_WIDTH, DESK_HEIGHT - CROSS_CUT],
-				[DESK_WIDTH, DESK_HEIGHT],
-				[0, CROSS_CUT]
-			],
-			paths = [
-				[0, 1, 2, 3]
-			]
-		);
+	difference() {
+		union() {
+			rotate([rotX1, 0, 0])
+			linear_extrude(height = STOCK_THICKNESS)
+			polygon(
+				points = [
+					[0, 0],
+					[DESK_WIDTH, DESK_HEIGHT - CROSS_CUT],
+					[DESK_WIDTH, DESK_HEIGHT],
+					[0, CROSS_CUT]
+				],
+				paths = [
+					[0, 1, 2, 3]
+				]
+			);
 
-		// joints
+			// Joints
+			rotate([rotX2, 0, 0]) {
+				translate([0, -STOCK_THICKNESS, (CROSS_CUT - JOINT_WIDTH)/2])
+				rotate([0, -90, 0])
+				joint();
+				translate([DESK_WIDTH, -STOCK_THICKNESS, DESK_HEIGHT- (CROSS_CUT - JOINT_WIDTH)/2])
+				rotate([0, 90, 0])
+				joint();
+			}
+		}
+
+		// Fillets
 		rotate([rotX2, 0, 0]) {
-			translate([0, -STOCK_THICKNESS, (CROSS_CUT - JOINT_WIDTH)/2])
-			rotate([0, -90, 0])
-			joint();
-			translate([DESK_WIDTH, -STOCK_THICKNESS, DESK_HEIGHT- (CROSS_CUT - JOINT_WIDTH)/2])
-			rotate([0, 90, 0])
-			joint();
+			translate([2, -STOCK_THICKNESS, (CROSS_CUT - JOINT_WIDTH)/2]) rotate([90, 90, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+			translate([2, -STOCK_THICKNESS, (CROSS_CUT - JOINT_WIDTH)/2 + JOINT_WIDTH]) rotate([90, 0, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+
+			translate([DESK_WIDTH, -STOCK_THICKNESS, DESK_HEIGHT- (CROSS_CUT - JOINT_WIDTH)/2]) rotate([90, 270, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+			translate([DESK_WIDTH, -STOCK_THICKNESS, DESK_HEIGHT- (CROSS_CUT - JOINT_WIDTH)/2 - JOINT_WIDTH]) rotate([90, 180, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
 		}
 	}
 }
@@ -374,16 +398,25 @@ module rest() {
 
 	translate(trans)
 	rotate(rot)
-	union() {
-		cube([DESK_WIDTH, REST_DEPTH, STOCK_THICKNESS]);
+	difference() {
+		union() {
+			cube([DESK_WIDTH, REST_DEPTH, STOCK_THICKNESS]);
 
-		// joints
-		translate([0, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
-		rotate([90, 0, -90])
-		joint();
-		translate([DESK_WIDTH, (REST_DEPTH - JOINT_WIDTH) / 2, 0])
-		rotate([90, 0, 90])
-		joint();
+			// joints
+			translate([0, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
+			rotate([90, 0, -90])
+			joint();
+			translate([DESK_WIDTH, (REST_DEPTH - JOINT_WIDTH) / 2, 0])
+			rotate([90, 0, 90])
+			joint();
+		}
+
+		// Fillets
+		translate([0, (REST_DEPTH + JOINT_WIDTH) / 2, 0]) rotate([0, 0, 90]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([0, (REST_DEPTH + JOINT_WIDTH) / 2 - JOINT_WIDTH, 0]) rotate([0, 0, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+
+		translate([DESK_WIDTH, (REST_DEPTH - JOINT_WIDTH) / 2, 0]) rotate([0, 0, 270]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+		translate([DESK_WIDTH, (REST_DEPTH - JOINT_WIDTH) / 2 + JOINT_WIDTH, 0]) rotate([0, 0, 0]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
 	}
 }
 
@@ -398,16 +431,25 @@ module topsupport() {
 
 		translate(trans)
 		rotate(rot)
-		union() {
-			cube([DESK_WIDTH, TOPSUPPORT_DEPTH, STOCK_THICKNESS]);
+		difference() {
+			union() {
+				cube([DESK_WIDTH, TOPSUPPORT_DEPTH, STOCK_THICKNESS]);
 
-			// joints
-			translate([0, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2, 0])
-			rotate([90, 0, -90])
-			joint();
-			translate([DESK_WIDTH, (TOPSUPPORT_DEPTH - JOINT_WIDTH) / 2, 0])
-			rotate([90, 0, 90])
-			joint();
+				// joints
+				translate([0, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2, 0])
+				rotate([90, 0, -90])
+				joint();
+				translate([DESK_WIDTH, (TOPSUPPORT_DEPTH - JOINT_WIDTH) / 2, 0])
+				rotate([90, 0, 90])
+				joint();
+			}
+
+			// Fillets
+			translate([0, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2, 0]) rotate([0, 0, 90]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+			translate([0, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2 - JOINT_WIDTH, 0]) rotate([0, 0, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+
+			translate([DESK_WIDTH, (TOPSUPPORT_DEPTH - JOINT_WIDTH) / 2, 0]) rotate([0, 0, 270]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+			translate([DESK_WIDTH, (TOPSUPPORT_DEPTH - JOINT_WIDTH) / 2 + JOINT_WIDTH, 0]) rotate([0, 0, 0]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
 		}
 	}
 }
@@ -449,7 +491,7 @@ module jointHole() {
  */
 module keys() {
 	if (FLAT) {
-		translate([STOCK_LENGTH - CLEARANCE - KEY_LENGTH, CLEARANCE, 0])
+		translate([DESK_DEPTH + DESK_HEIGHT + BASE_HEIGHT + 8*CLEARANCE, CLEARANCE, 0])
 		for(n = [0 : 9]) {
 			translate([0, (KEY_THICKNESS + CLEARANCE) * n, 0])
 			key();
@@ -463,6 +505,40 @@ module keys() {
 module key() {
 	linear_extrude(height = STOCK_THICKNESS)
 	polygon([[0, 0], [KEY_LENGTH, 0], [0, KEY_THICKNESS]]);
+}
+
+/**
+ * Male and female part of a joint plus key for test cutting.
+ */
+module jointTest() {
+	if (FLAT) {
+		FEMALE_X = STOCK_THICKNESS*3;
+		FEMALE_Y = JOINT_WIDTH+2*STOCK_THICKNESS;
+
+		translate([STOCK_LENGTH - FEMALE_X - CLEARANCE, CLEARANCE, 0]) {
+			// Female
+			difference() {
+				cube([FEMALE_X, FEMALE_Y, STOCK_THICKNESS]);
+				translate([2*STOCK_THICKNESS, STOCK_THICKNESS, 0]) rotate([0, 0, 90]) jointHole();
+			}
+
+			// Male
+			translate([-(FEMALE_X + CLEARANCE), CLEARANCE + STOCK_THICKNESS, 0])
+			rotate([0, 0, 90])
+			difference() {
+				union() {
+					translate([-STOCK_THICKNESS, 0, 0]) cube([JOINT_WIDTH+2*STOCK_THICKNESS, 2*STOCK_THICKNESS, STOCK_THICKNESS]);
+					rotate([90, 0, 0]) joint();
+				}
+				// Fillets
+				rotate([0, 0, 180]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+				translate([JOINT_WIDTH, 0, 0]) rotate([0, 0, 270]) fillet(FILLET_RADIUS, STOCK_THICKNESS);
+			}
+
+			// Key
+			translate([0, FEMALE_Y + CLEARANCE, 0]) key();
+		}
+	}
 }
 
 
@@ -485,20 +561,31 @@ module stock(){
 	cube([STOCK_LENGTH, STOCK_WIDTH, STOCK_THICKNESS]);
 }
 
+/**
+ * Render either the desk or the joint tests.
+ */
+module show() {
+	if (TEST_JOINT) {
+		jointTest();
+	}
+	else {
+		desk();
+	}
+}
+
 
 /*
 |-------------------------------------------------------------------------------
 | Rendering logic
 |-------------------------------------------------------------------------------
 */
-
 if (FLAT && PROJECTION) {
 	projection(cut = true)
 	translate([0, 0, -STOCK_THICKNESS/2])
-	desk();
+	show();
 }
 else {
-	desk();
+	show();
 }
 
 if (FLAT && SHOW_STOCK)
