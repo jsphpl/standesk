@@ -1,7 +1,7 @@
 /**
  * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Version: 0.1.3
+ * Version: 0.1.4
  * Author: Joseph Paul <mail@jsph.pl>
  * License: Public Domain
  */
