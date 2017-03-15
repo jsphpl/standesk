@@ -15,14 +15,14 @@ DESK_HEIGHT = 1100;                                                             
 DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
 DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
-CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
-FILLET_RADIUS = 5;                                                            	// mm // Radius for dogbone fillets
-DRILL_DIAMETER = 6;                                                             // mm // Diameter of the drill bit used to cut the material
+TOOL_DIAMETER = 4;                                                             	// mm // Diameter of the drill bit used to cut the material
 CLEARANCE = 10;                                                           		// mm // Extra space between individual Parts on the panel
+CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
+FILLET_RADIUS = TOOL_DIAMETER/1.9;                                              // mm // Radius for dogbone fillets
 
-STOCK_WIDTH = 1250;                                                          	// mm // Width of one panel of the desired raw material
-STOCK_LENGTH = 2500;                                                         	// mm // Length of one panel of the desired raw material
-STOCK_THICKNESS = 18;                                                        	// mm // Thickness of the desired raw material
+STOCK_WIDTH = 1210;                                                          	// mm // Width of one panel of the desired raw material
+STOCK_LENGTH = 2480;                                                         	// mm // Length of one panel of the desired raw material
+STOCK_THICKNESS = 12;                                                        	// mm // Thickness of the desired raw material
 
 
 /*
@@ -31,10 +31,10 @@ STOCK_THICKNESS = 18;                                                        	//
 |-------------------------------------------------------------------------------
 */
 FLAT = true;
-PROJECTION = false;
-SHOW_STOCK = false;
-TEST_JOINT = false;
-$fn = 24;
+PROJECTION = true;
+SHOW_STOCK = true;
+TEST_JOINT = true;
+$fn = 50;
 
 
 /*
@@ -48,14 +48,14 @@ STAND_DEPTH = 180;
 STAND_SPACE = 200;
 
 // Foot rest
-REST_DEPTH = 150;
+REST_DEPTH = 130;
 REST_LEVEL = 240;
 REST_ANGLE = 15; // degrees
 
 // Top Support (another strut right below the table top as a
 // support when using thinner material, recommended < 15mm)
 TOPSUPPORT_ON = true;
-TOPSUPPORT_DEPTH = 130;
+TOPSUPPORT_DEPTH = 110;
 
 // Crosses
 CROSS_CUT = max(DESK_HEIGHT/7, 140); 	// 1/7th of DESK_HEIGHT if > 140mm
@@ -65,14 +65,14 @@ CROSS_WIDTH = sin(90 - CROSS_ANGLE) * CROSS_CUT;
 CROSS_SINGLE = true;  					// Use only one strut for the cross
 
 // Joints
-JOINT_WIDTH = 90;
-JOINT_LENGTH = 55;
+JOINT_WIDTH = 60;
+JOINT_LENGTH = 45;
 JOINT_TOLERANCE = 0;
 JOINT_SLOT_WIDTH = STOCK_THICKNESS + JOINT_TOLERANCE;
 JOINT_SLOT_LENGTH = STOCK_THICKNESS * 1.2;
 JOINT_SLOT_OFFSET = STOCK_THICKNESS * 0.8;
-JOINT_SLOT_TOLERANCE = 1;
-JOINT_BUFFER = max(2.4*STOCK_THICKNESS, 6); // at least 6mm
+JOINT_SLOT_TOLERANCE = .2;
+JOINT_BUFFER = max(3.3*STOCK_THICKNESS, 6); // at least 6mm
 
 // Keys
 KEY_LENGTH = 50;
@@ -222,6 +222,12 @@ module foot(side) {
 				rotate([90, 0, -90])
 				jointHole();
 
+				// support
+				translate([0, STAND_SPACE + (STAND_DEPTH+STOCK_THICKNESS)/2, DESK_HEIGHT-TOPSUPPORT_DEPTH])
+				rotate([90, 0, 0])
+				translate([STOCK_THICKNESS, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2, 0])
+				rotate([90, 0, -90])
+				jointHole();
 			}
 		}
 	}
@@ -255,10 +261,16 @@ module foot(side) {
 				// rest
 				translate([STOCK_THICKNESS, STAND_SPACE + (STAND_DEPTH - REST_DEPTH)/2, REST_LEVEL])
 				rotate([REST_ANGLE, 0, 0])
-				translate([STOCK_THICKNESS, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
+				translate([0, (REST_DEPTH + JOINT_WIDTH) / 2, 0])
 				rotate([90, 0, -90])
 				jointHole();
 
+				// support
+				translate([STOCK_THICKNESS, STAND_SPACE + (STAND_DEPTH+STOCK_THICKNESS)/2, DESK_HEIGHT-TOPSUPPORT_DEPTH])
+				rotate([90, 0, 0])
+				translate([0, (TOPSUPPORT_DEPTH + JOINT_WIDTH) / 2, 0])
+				rotate([90, 0, -90])
+				jointHole();
 			}
 		}
 	}
@@ -523,7 +535,7 @@ module jointTest() {
 			}
 
 			// Male
-			translate([-(FEMALE_X + CLEARANCE), CLEARANCE + STOCK_THICKNESS, 0])
+			translate([-(FEMALE_X + 2*CLEARANCE), CLEARANCE + STOCK_THICKNESS, 0])
 			rotate([0, 0, 90])
 			difference() {
 				union() {
@@ -565,11 +577,9 @@ module stock(){
  * Render either the desk or the joint tests.
  */
 module show() {
+	desk();
 	if (TEST_JOINT) {
 		jointTest();
-	}
-	else {
-		desk();
 	}
 }
 
