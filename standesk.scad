@@ -11,18 +11,20 @@
 | Parameters (user-settable)
 |-------------------------------------------------------------------------------
 */
-DESK_HEIGHT = 1100;                                                             // mm // Height of the desk surface above the floor
-DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
-DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
+DESK_HEIGHT = 400;                                                             // mm // Height of the desk surface above the floor
+DESK_WIDTH = 500;                                                              // mm // Width of the desk surface between feet
+DESK_DEPTH = 300;                                                               // mm // Depth of the desk surface between front and rear edge
 
-TOOL_DIAMETER = 4;                                                             	// mm // Diameter of the drill bit used to cut the material
-CLEARANCE = 10;                                                           		// mm // Extra space between individual Parts on the panel
+TOOL_DIAMETER = .1;                                                           	// mm // Diameter of the drill bit used to cut the material
+CLEARANCE = 2;                                                           		// mm // Extra space between individual Parts on the panel
 CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
 FILLET_RADIUS = TOOL_DIAMETER/1.9;                                              // mm // Radius for dogbone fillets
 
-STOCK_WIDTH = 1210;                                                          	// mm // Width of one panel of the desired raw material
-STOCK_LENGTH = 2480;                                                         	// mm // Length of one panel of the desired raw material
-STOCK_THICKNESS = 12;                                                        	// mm // Thickness of the desired raw material
+STOCK_WIDTH = 300;                                                          	// mm // Width of one panel of the desired raw material
+STOCK_LENGTH = 600;                                                         	// mm // Length of one panel of the desired raw material
+STOCK_THICKNESS = 4.95;                                                        	// mm // Thickness of the desired raw material
+
+SCALE = 0.38;
 
 
 /*
@@ -43,30 +45,30 @@ $fn = 50;
 |-------------------------------------------------------------------------------
 */
 // Feet
-BASE_HEIGHT = 200;
-STAND_DEPTH = 180;
-STAND_SPACE = 200;
+BASE_HEIGHT = 200*SCALE;
+STAND_DEPTH = 180*SCALE;
+STAND_SPACE = 200*SCALE;
 
 // Foot rest
-REST_DEPTH = 130;
-REST_LEVEL = 240;
+REST_DEPTH = 130*SCALE;
+REST_LEVEL = 240*SCALE;
 REST_ANGLE = 15; // degrees
 
 // Top Support (another strut right below the table top as a
 // support when using thinner material, recommended < 15mm)
 TOPSUPPORT_ON = true;
-TOPSUPPORT_DEPTH = 110;
+TOPSUPPORT_DEPTH = 110*SCALE;
 
 // Crosses
-CROSS_CUT = max(DESK_HEIGHT/7, 140); 	// 1/7th of DESK_HEIGHT if > 140mm
+CROSS_CUT = max(DESK_HEIGHT/7, 140)*SCALE; 	// 1/7th of DESK_HEIGHT if > 140mm
 CROSS_CLEARANCE = 0;
 CROSS_ANGLE = atan((DESK_HEIGHT - CROSS_CUT) / DESK_WIDTH);
 CROSS_WIDTH = sin(90 - CROSS_ANGLE) * CROSS_CUT;
 CROSS_SINGLE = true;  					// Use only one strut for the cross
 
 // Joints
-JOINT_WIDTH = 60;
-JOINT_LENGTH = 45;
+JOINT_WIDTH = 60*SCALE;
+JOINT_LENGTH = 45*SCALE;
 JOINT_TOLERANCE = 0;
 JOINT_SLOT_WIDTH = STOCK_THICKNESS + JOINT_TOLERANCE;
 JOINT_SLOT_LENGTH = STOCK_THICKNESS * 1.2;
@@ -75,7 +77,7 @@ JOINT_SLOT_TOLERANCE = .2;
 JOINT_BUFFER = max(3.3*STOCK_THICKNESS, 6); // at least 6mm
 
 // Keys
-KEY_LENGTH = 50;
+KEY_LENGTH = 50*SCALE;
 KEY_THICKNESS = STOCK_THICKNESS * 1.2;
 
 // Flat Offsets
