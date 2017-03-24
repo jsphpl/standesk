@@ -1,56 +1,38 @@
-standesk
-========
+# standesk
 
-Let's do ourselves a favour and make a simple standing desk designed to be back-friendly, robust, cheap and easy to make. A 115 by 80cm 110cm high desk can be made out of a single 250x125cm panel using only a saw or a cnc router.
+A parametric & customizable desk, designed to be CNC-milled from a single plywood panel.
 
-The intended material is 13mm of these brown coated birch plywood panels (in german: Sieb-Film Platte) if no one comes up with a better idea…
+![](img/standesk-photo-kamp-lintfort.jpg)
 
-[Preview of the 3d model](140909.standesk-110x115x80-assembled.stl)
+## Principles
 
-## Status
-**in design** – there is just the idea and the openscad model so far, prototype is on the way…
-
-### Known flaws :thumbsdown:
-- Height not variable
-- Right now, we only use about 84% (see the histogram screenshot) of a 2500x1250 panel when making a 1150x1100x800 desk – *how can we optimize?*
-- Feet will look distinct: due to the close arrangement of the elements on the panel, the outer surface of the left foot will be the same as the inner surface of the right foot, vice versa. To solve this, one would have to mirror the first foot to create the second one. Right now, the second foot is created by rotating the first one by 180°. But how can we fit all parts on the panel then…?
-
-### Known yeahs :thumbsup:
-- Uses only wood (or other material of choice), no screws or similar
-- Width, height, depth, material strenght, and many more parameters adjustable (fully parametrized scad)
-- No tools needed, except for a saw or cnc mill
-- Easy to source
-- Cheap
-
-### Pics
-![standesk screenshot](standesk-screenshot-assembled.png "standesk screenshot")
-![standesk screenshot](140909.standesk-110x115x80-screenshot-histogram.png "standesk screenshot")
-
+- Only wood – no glue, screws or other fixture
+- As little waste as possible – when cutting it from a single 2.50m x 1.25m sheet
+- No other tools required than a 3D CNC mill and sanding paper
+- Fully parametric – also adaptable to lower scales (possibly for laser cutting)
 
 ## How to build
-*TODO: video*
+
+For build instructions, please head over to my [FabAcademy page](archive.fabacademy.org/archives/2017/fablaberfindergarden/students/260/fabacademy/week-7/).
 
 
-## On the scad model
-This is a first, hacky version. Needs a rewrite soon. With
-- **everything much nicer AND** ;)
-- a library of elements so we can easily build other furniture and stuff
-- an algorithm to automagically position the elements as close as possible
-- detection, if elements fit onto the panel -> warning if not
+## On the OpenSCAD model
 
-*-> basically, creating a framework for simple plug-fit furniture*
+The model is fully parametrized, meaning that you can freely define how high, wide, and deep you want your desk to be. Yet, if you want to cut everything from one 250cm x 125cm sheet, the preset values (80x112x110) are close the maximum possible dimensions. That is, unless you find a better way to nest the parts.
 
-**Apart from that, you can:**
-- Set your desired dimensions via the topmost variables
-- Choose material width, spacings, and all the other properties…
-- Switch to flat=true in order to see the individual parts arranged on the panel
+Anything larger than those values will most likely require more than one panel to fabricate.
 
+We have two basic states of the model: `FLAT = false` gives us the opportunity to get an impression of the assembled desk, while `FLAT = true` lets us produce the 2D outlines required for milling.
+
+<img width="49.5%" src="img/standesk-model-flat.png" alt="'FLAT' view of the standesk model" />
+<img width="49.5%" src="img/standesk-model-assembled.png" alt="'assembled' view of the standesk model" />
+
+The tool diameter has been taken into account and can be set as a parameter. Dogbones are automatically generated accordingly and the paths are offset, so that the exported DXF traces can be directly fed into a CAM processor.
+
+## Support / Feedback
+
+Please use GitHub issues or Pull Requests for feedback, bug reports and improvements. If you need any further help, feel free to [contact me](mailto:mail@jsph.pl).
 
 ## License
-```
-----------------------------------------------------------------------------
-"PASS-IT-ON LICENSE" <3
-As long as you retain this notice, you can do whatever you want with this
-stuff. If you think it's worth it, pass it on and do someone else a favour.
-----------------------------------------------------------------------------
-```
+
+Public Domain. Nobody cares what you do with this stuff.
