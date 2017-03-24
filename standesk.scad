@@ -1,39 +1,79 @@
 /**
  * standesk - A customizable standing desk made out of just one plywood panel.
  *
- * Version: 0.1.4
+ * WARNING: This model is a quick-and-dirty sketch! Although it is fully
+ * parametric, some settings might yield nonsense paths or break the
+ * model in unexpected ways! Feel free to contribute by opening PRs
+ * or issues on the official GitHub respository linked below.
+ *
+ * Version: 0.1.5
  * Author: Joseph Paul <mail@jsph.pl>
  * License: Public Domain
+ * URL: https://github.com/jsphpl/standesk
  */
 
 /*
 |-------------------------------------------------------------------------------
 | Parameters (user-settable)
 |-------------------------------------------------------------------------------
+|
+| The following variables should be set by the user in order
+| to define the overall dimensions of the resulting desk.
+|
+| For instrucions on how to use this model, please refer to
+| https://github.com/jsphpl/standesk
+|
 */
-DESK_HEIGHT = 400;                                                             // mm // Height of the desk surface above the floor
-DESK_WIDTH = 500;                                                              // mm // Width of the desk surface between feet
-DESK_DEPTH = 300;                                                               // mm // Depth of the desk surface between front and rear edge
+DESK_HEIGHT = 1100;                                                             // mm // Height of the desk surface above the floor
+DESK_WIDTH = 1120;                                                              // mm // Width of the desk surface between feet
+DESK_DEPTH = 800;                                                               // mm // Depth of the desk surface between front and rear edge
 
-TOOL_DIAMETER = .1;                                                           	// mm // Diameter of the drill bit used to cut the material
-CLEARANCE = 2;                                                           		// mm // Extra space between individual Parts on the panel
+TOOL_DIAMETER = 4;                                                             	// mm // Diameter of the drill bit used to cut the material
+CLEARANCE = 10;                                                           		// mm // Extra space between individual Parts on the panel
 CORNER_RADIUS = 10;                                                             // mm // Radius for rounding the outer corners
 FILLET_RADIUS = TOOL_DIAMETER/1.9;                                              // mm // Radius for dogbone fillets
 
-STOCK_WIDTH = 300;                                                          	// mm // Width of one panel of the desired raw material
-STOCK_LENGTH = 600;                                                         	// mm // Length of one panel of the desired raw material
-STOCK_THICKNESS = 4.95;                                                        	// mm // Thickness of the desired raw material
+STOCK_WIDTH = 1210;                                                          	// mm // Width of one panel of the desired raw material
+STOCK_LENGTH = 2480;                                                         	// mm // Length of one panel of the desired raw material
+STOCK_THICKNESS = 12;                                                        	// mm // Thickness of the desired raw material
 
-SCALE = 0.38;
+/**
+ * Global SCALE
+ * 
+ * Increase/decrease to change the size of all joints and
+ * the width of all struts. This value basically lets
+ * you proportionally scale all other parameters
+ * than the ones defined above this comment.
+ *
+ * Please always check both the assembled and flat view
+ * of the model before producing the DXF outlines.
+ */
+SCALE = 1;
 
 
 /*
 |-------------------------------------------------------------------------------
 | Output Options
 |-------------------------------------------------------------------------------
+|
+| When FLAT is false, the assembled model will be rendered (3D).
+| 
+| When FLAT is true, the parts will be shown the way they're
+| arranged on the the stock panel. SHOW_STOCK can be used
+| to check if everything fits on the panel.
+|
+| In order to produce the final DXF curves, both FLAT and
+| PROJECTION must be set to `true`.
+|
+| If TEST_JOINT is true, a separate joint (male + female + pin)
+| will be added to the FLAT view. These parts should be cut
+| separately, prior to all other cuts, in order to ensure
+| the parameters are correct for the material and thus
+| the joints fit as desired, so you can assemble it. 
+|
 */
-FLAT = true;
-PROJECTION = true;
+FLAT = false;
+PROJECTION = false;
 SHOW_STOCK = true;
 TEST_JOINT = true;
 $fn = 50;
@@ -43,6 +83,11 @@ $fn = 50;
 |-------------------------------------------------------------------------------
 | Details
 |-------------------------------------------------------------------------------
+|
+| The variables defined below should typically not need to be adjusted.
+| Most of the time, only the primary dimensions (width, height, depth)
+| as well as the stock and machine parameters should need adjustment.
+|
 */
 // Feet
 BASE_HEIGHT = 200*SCALE;
