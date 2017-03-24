@@ -24,8 +24,7 @@ Anything larger than those values will most likely require more than one panel t
 
 We have two basic states of the model: `FLAT = false` gives us the opportunity to get an impression of the assembled desk, while `FLAT = true` lets us produce the 2D outlines required for milling.
 
-<img width="49.5%" src="img/standesk-model-flat.png" alt="'FLAT' view of the standesk model" />
-<img width="49.5%" src="img/standesk-model-assembled.png" alt="'assembled' view of the standesk model" />
+<img width="49%" src="img/standesk-model-flat.png" alt="'FLAT' view of the standesk model" /><img width="49%" src="img/standesk-model-assembled.png" alt="'assembled' view of the standesk model" />
 
 The tool diameter has been taken into account and can be set as a parameter. Dogbones are automatically generated accordingly and the paths are offset, so that the exported DXF traces can be directly fed into a CAM processor.
 
