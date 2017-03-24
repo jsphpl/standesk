@@ -13,7 +13,7 @@ A parametric & customizable desk, designed to be CNC-milled from a single plywoo
 
 ## How to build
 
-For build instructions, please head over to my [FabAcademy page](archive.fabacademy.org/archives/2017/fablaberfindergarden/students/260/fabacademy/week-7/).
+For build instructions, please head over to my [FabAcademy page](http://archive.fabacademy.org/archives/2017/fablaberfindergarden/students/260/fabacademy/week-7/).
 
 
 ## On the OpenSCAD model
